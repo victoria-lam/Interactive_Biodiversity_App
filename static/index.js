@@ -1,20 +1,20 @@
 /* populate a dropdown select element with list of sample names */
-//reference to dropdown select element
-let selDataset = document.getElementById("selDataset");
-let url = "/names";
+    //reference to dropdown select element
+    let selDataset = document.getElementById("selDataset");
+    let url = "/names";
 
-Plotly.d3.json(url, function(error, sampleName) {
-    if (error) return console.warn(error);
-    //console.log(sampleName); 
+    Plotly.d3.json(url, function(error, sampleName) {
+        if (error) return console.warn(error);
+        //console.log(sampleName); 
 
-    // create option element, append samples to select tag
-    for (var i = 0; i < sampleName.length; i++) {
-        var currentOption = document.createElement("option");
-        currentOption.innerHTML = sampleName[i];
-        currentOption.value = sampleName[i];
-        selDataset.appendChild(currentOption);
-    };
-});
+        // create option element, append samples to select tag
+        for (var i = 0; i < sampleName.length; i++) {
+            var currentOption = document.createElement("option");
+            currentOption.innerHTML = sampleName[i];
+            currentOption.value = sampleName[i];
+            selDataset.appendChild(currentOption);
+        };
+    });
 
 /* default sample */
 var defaultSamp = "BB_940"
@@ -40,7 +40,8 @@ function init(sample) {
     Plotly.d3.json("/otu", function(error, otuData) {
         if (error) return console.log(error);
         //console.log(otuData);
-
+        
+        //loop through otuData and append otuIds to list
         var otuLabel = []
         for (var i = 0; i < otuIds.length; i++) {
             otuLabel.push(otuData[otuIds[i]])
@@ -76,6 +77,7 @@ function init(sample) {
         var bubbleData = [{
             x: xAxis,
             y: yAxis,
+            hovertext: otuLabel,
             mode: "markers",
             marker: {
                 size: sampleData[0]["sample_values"],
@@ -97,18 +99,40 @@ function init(sample) {
         Plotly.newPlot("bubble", bubbleData, bubbleLayout);
     });
 });
+    ////////////////////
+    /* METADATA PANEL */
+    ////////////////////
+    //get data from metadata route
+    Plotly.d3.json(`/metadata/${sample}`, function(error, metaData) {
+        if (error) return console.log(error);
+        console.log(metaData);
+
+        //get list of keys from metaData 
+        var sampleKeys = Object.keys(metaData);
+        var sampleMetadata = document.getElementById("sampleMetadata");
+
+        //clear current data
+        sampleMetadata.innerHTML = null;
+
+        //loop through sampleKeys to get key, value pairs, create div and append 
+        for (var i = 0; i < sampleKeys.length; i++) {
+            var keyValue = document.createElement("p");
+            keyValue.innerHTML = sampleKeys[i] + ": " + metaData[sampleKeys[i]];
+            sampleMetadata.appendChild(keyValue);
+        };
+    });
 };
 //////////////////////////////////
 /* update pie and bubble charts */
 //////////////////////////////////
 function updatePie(newsampleValues, newotuIds, newSample) {
-    var pie = document.getElementById("pie");
+    let pie = document.getElementById("pie");
     Plotly.restyle(pie, "values", [newsampleValues]);
     Plotly.restyle(pie, "labels" [newotuIds]);
 };
 
 function updateBubble(newX, newY, newSample) {
-    var bubble = document.getElementById("bubble");
+    let bubble = document.getElementById("bubble");
     Plotly.restyle(bubble, "x", [newX]);
     Plotly.restyle(bubble, "y", [newY]);
 };
@@ -120,7 +144,8 @@ function optionChanged(newSample) {
     var sampleUrl = `/samples/${newSample}`
     var metadataUrl = `/metadata/${newSample}`
     
-    //get new data from sample route
+    //update pie and bubble charts//
+    //get new data from sample route//
     Plotly.d3.json(sampleUrl, function(error, newData) {
         if (error) return console.log(error);
         console.log(newData);
@@ -134,8 +159,28 @@ function optionChanged(newSample) {
         var newY = newData[0]["sample_values"]
 
         updatePie(newsampleValues, newotuIds, newSample);
-        updateBubble(newX, newY, newSample); 
+        updateBubble(newX, newY, newSample);
+    
+    //update metadata//
+    Plotly.d3.json(metadataUrl, function(error, metaData) {
+        if (error) return console.log(error);
+        console.log(metaData);
+    
+        //get list of keys from metaData
+        var sampleKeys = Object.keys(metaData);
+        var sampleMetadata = document.getElementById("sampleMetadata");
+
+        //clear current data
+        sampleMetadata.innerHTML = null;
+    
+        //loop through sampleKeys to get key, value pairs, create div and append 
+        for (var i = 0; i < sampleKeys; i++) {
+            var keyValue = document.createElement("p");               
+            keyValue.innerHTML = sampleKeys[i] + ": " + metaData[sampleKeys[i]];
+            sampleMetadata.appendChild(keyValue);
+        };
     });
+   });
 };
 init(defaultSamp);
 
