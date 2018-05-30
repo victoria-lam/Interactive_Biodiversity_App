@@ -35,6 +35,7 @@ function optionChanged(sample) {
 /* METADATA PANEL */
 ////////////////////
 function createMetadata(sample) {
+    //get data from metadata route
     Plotly.d3.json(`/metadata/${sample}`, function(error, metaData) {
         if (error) return console.log(error);
         console.log(metaData);
@@ -69,8 +70,17 @@ function createCharts(sample) {
         //get values for bubble chart x- and y-axis 
         var xAxis = sampleData[0]["otu_ids"]
         var yAxis = sampleData[0]["sample_values"]
-    
-        };
+        
+        //get data from otu route
+        Plotly.d3.json("/otu", function(error, otuData) {
+            if (error) return console.log(error);
+            //console.log(otuData);
+        
+            //loop through otuData and append otuIds to list
+            var otuLabels = []
+            for (var i = 0; i < otuIds.length; i++) {
+                otuLabels.push(otuData[otuIds[i]]);
+            };
 
         ///////////////
         /* PIE CHART */
@@ -82,11 +92,12 @@ function createCharts(sample) {
         var pieData = [{
             values: sampleValues,
             labels: otuIds,
-            //hovertext: otuLabels.slice(0, 10),
+            hovertext: otuLabels.slice(0, 10),
             type: "pie"
         }];
         //set up layout for pie chart
         var pieLayout = {
+            title: "<b>Top 10 OTUs in Selected Sample</b>",
             width: 450,
             height: 450,
             margin: {
@@ -106,11 +117,11 @@ function createCharts(sample) {
         var bubbleData = [{
             x: xAxis,
             y: yAxis,
-            //hovertext: otuLabel,
+            hovertext: otuLabels,
             mode: "markers",
             marker: {
-                size: sampleData[0]["sample_values"],
-                color: sampleData[0]["otu_ids"],
+                size: yAxis,
+                color: xAxis,
                 colorscale: "Earth"
             },
             type: "scatter"
@@ -118,6 +129,7 @@ function createCharts(sample) {
 
         //set up layout for bubble chart
         var bubbleLayout = {
+            title: "<b>Relationship Between OTU ID and Sample Values</b>",
             xaxis: {title: "OTU IDs"},
             showlegend: false,
             height: 600,
@@ -127,6 +139,8 @@ function createCharts(sample) {
         //plot bubble chart
         Plotly.plot("bubble", bubbleData, bubbleLayout);
     });
+    };
+});
 };
 
 //////////////////////////////////
@@ -136,29 +150,48 @@ function updateCharts(sample) {
     //get data from sample route 
     Plotly.d3.json(`/samples/${sample}`, function(error, sampleData) {
         if (error) return console.log(error);
-        //console.log(sampleData);
+        console.log(sampleData[0]["sample_values"].slice(0,10));
+        console.log(sampleData[0]["otu_ids"].slice(0,10));
         
         for (var i = 0; i < sampleData.length; i++) {
             //slice to grab top 10 values from keys
-            values = sampleData[0]["sample_values"].slice(0, 10);
-            labels = sampleData[0]["otu_ids"].slice(0, 10);
+            var values = sampleData[0]["sample_values"].slice(0, 10);
+            var labels = sampleData[0]["otu_ids"].slice(0, 10);
 
             //get values for bubble chart x- and y-axis 
             var newX = sampleData[0]["otu_ids"]
             var newY = sampleData[0]["sample_values"]
-        };
+            
+            //get data from otu route
+            Plotly.d3.json("/otu", function(error, otuData) {
+                if (error) return console.log(error);
+                //console.log(otuData);
+            
+                //loop through otuData and append otuIds to list
+                var otuLabels = []
+                for (var i = 0; i < labels.length; i++) {
+                    otuLabels.push(otuData[labels[i]]);
+                };
+
+                var hoverText = otuLabels.slice(0, 10);
 
         //get references to pie and bubble charts
         var PIE = document.getElementById("pie");
         var BUBBLE = document.getElementById('bubble');
 
         //update pie and bubble charts
-        Plotly.restyle(pie, "values", [values]);
-        Plotly.restyle(pie, "labels" [labels]);
+        Plotly.restyle(PIE, "values", [values]);
+        Plotly.restyle(PIE, "labels", [labels]);
+        Plotly.restyle(PIE, "hovertext", [hoverText])
 
-        Plotly.restyle(bubble, "x", [newX]);
-        Plotly.restyle(bubble, "y", [newY]);
+        Plotly.restyle(BUBBLE, "x", [newX]);
+        Plotly.restyle(BUBBLE, "y", [newY]);
+        Plotly.restyle(BUBBLE, "size", [newY]);
+        Plotly.restyle(BUBBLE, "color", [newX]);
+        Plotly.restyle(BUBBLE, "hovertext", [otuLabels]);
     });
+    };
+ });
 };
 
 //////////////////////////
@@ -230,11 +263,8 @@ function createGauge(sample) {
         yaxis: {zeroline:false, showticklabels:false,
                     showgrid: false, range: [-1, 1]}
         };
-        
-        //get reference to gauge
+
         var GAUGE = document.getElementById('gauge');
-        
-        //plot gauge
         Plotly.newPlot(GAUGE, data, layout);
     });
 };
