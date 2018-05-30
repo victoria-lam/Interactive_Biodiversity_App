@@ -7,13 +7,14 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Belly Button Diversity</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="style.css">
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     </head>
 
 <body>
     <div class="container">
         <!-- page header -->
-        <div class="jumbotron text-center">
+        <div class="jumbotron text-center font">
             <h1><strong>Belly Button Biodiversity Dashboard</strong></h1>
             <p>
                 Use the interactive charts below to explore the dataset.
@@ -21,7 +22,7 @@
         </div>
     </div>
     <div class="container">
-        <div class="col-lg-3">
+        <div>
             <!-- drop down bar -->
             <h4>SELECT Sample:</h4>
             <select id="selDataset" onchange="optionChanged(this.value)"></select>
@@ -37,11 +38,12 @@
                 </div>
                 <div id="sampleMetadata" class="panel-body"></div>
             </div>
-            <div class="col-lg-5">
+            <div class="col-lg-5 pie">
                 <!-- corresponding pie chart -->
+                <h3><b>Top 10 OTUs in Selected Sample</b></h3>
                 <div id="pie"></div>
             </div>            
-            <div class="col-lg-5">
+            <div class="col-lg-3">
                 <!-- washing frequency -->
                 <div id="gauge"></div>
             </div>
