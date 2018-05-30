@@ -97,7 +97,6 @@ function createCharts(sample) {
         }];
         //set up layout for pie chart
         var pieLayout = {
-            title: "<b>Top 10 OTUs in Selected Sample</b>",
             width: 450,
             height: 450,
             margin: {
